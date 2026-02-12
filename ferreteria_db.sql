@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 12-02-2026 a las 01:39:18
+-- Tiempo de generación: 12-02-2026 a las 23:47:16
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -114,7 +114,10 @@ INSERT INTO `login_attempts` (`id`, `username`, `ip_address`, `user_agent`, `suc
 (10, 'admin', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 1, '2026-02-12 00:13:38'),
 (11, 'admin', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 1, '2026-02-12 00:13:51'),
 (12, 'admin', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 1, '2026-02-12 00:14:23'),
-(13, 'admin', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 1, '2026-02-12 00:16:41');
+(13, 'admin', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 1, '2026-02-12 00:16:41'),
+(14, 'admin', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 1, '2026-02-12 21:06:54'),
+(15, 'admin', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 1, '2026-02-12 21:12:20'),
+(16, 'admin', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 1, '2026-02-12 21:36:15');
 
 -- --------------------------------------------------------
 
@@ -216,7 +219,8 @@ CREATE TABLE `productos` (
 
 INSERT INTO `productos` (`id`, `nombre`, `descripcion`, `codigo_barra`, `modelo`, `categoria_id`, `marca_id`, `unidad_medida_id`, `proveedor_id`, `precio`, `precio_costo`, `margen_ganancia`, `stock`, `unidad_medida`, `stock_minimo`, `ubicacion_deposito`, `imagen`, `activo`, `deleted_at`, `created_at`, `updated_at`) VALUES
 (1, 'pedazo de chapa', '', '123123123', '2sd3das', 4, 12, 2, NULL, 520.00, 400.00, 30.00, 8.000, 'unid', 5.000, NULL, NULL, 1, NULL, '2026-02-12 00:18:09', '2026-02-12 00:31:08'),
-(2, 'Cable 2.5mm', NULL, 'TEST-1770855977', NULL, NULL, NULL, 1, NULL, 150.50, 0.00, 30.00, 98.500, 'mts', 0.000, NULL, NULL, 1, NULL, '2026-02-12 00:26:17', '2026-02-12 00:26:17');
+(2, 'Cable 2.5mm', NULL, 'TEST-1770855977', NULL, NULL, NULL, 1, NULL, 150.50, 0.00, 30.00, 98.500, 'mts', 0.000, NULL, NULL, 1, NULL, '2026-02-12 00:26:17', '2026-02-12 00:26:17'),
+(3, 'prueba', 'articulo de prueba', '8473432', NULL, 5, NULL, 2, NULL, 130.00, 100.00, 30.00, 20.300, 'unid', 20.100, NULL, NULL, 1, NULL, '2026-02-12 21:31:32', '2026-02-12 21:31:32');
 
 -- --------------------------------------------------------
 
@@ -295,7 +299,7 @@ CREATE TABLE `turnos_caja` (
 --
 
 INSERT INTO `turnos_caja` (`id`, `user_id`, `usuario_id`, `usuario_nombre`, `monto_inicial`, `monto_final`, `monto_esperado`, `diferencia`, `estado`, `fecha_apertura`, `fecha_cierre`, `notas_apertura`, `notas_cierre`, `cerrado_por`) VALUES
-(3, 1, 1, 'Administrador', 10.00, NULL, NULL, NULL, 'abierto', '2026-02-12 00:16:56', NULL, '', NULL, NULL);
+(3, 1, 1, 'Administrador', 10.00, 11.00, 1275.75, -1264.75, 'cerrado', '2026-02-12 00:16:56', '2026-02-12 21:14:02', '', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -360,7 +364,7 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id`, `username`, `password`, `nombre`, `email`, `rol`, `role_id`, `activo`, `is_active`, `last_login`, `failed_attempts`, `last_failed_login`, `created_at`, `updated_at`) VALUES
-(1, 'admin', '$argon2id$v=19$m=65536,t=4,p=3$OTRiMTdvcUN2SlJSdWJVQg$cT5XezjkaR348JI11Vd8jxqgWBU91fpczk82zvlaQT4', 'Administrador', 'admin@ferreteria.com', 'admin', 1, 1, 1, '2026-02-12 00:16:41', 0, NULL, '2026-02-11 23:49:57', '2026-02-12 00:16:41');
+(1, 'admin', '$argon2id$v=19$m=65536,t=4,p=3$bFhBaFd4SmZVQ1Q5Q1QudA$+QmNiT+pvyXrNUofaRUislEsv2TS8VV5OWGceioi90Y', 'Administrador', 'admin@ferreteria.com', 'admin', 1, 1, 1, '2026-02-12 21:36:15', 0, NULL, '2026-02-11 23:49:57', '2026-02-12 21:36:15');
 
 -- --------------------------------------------------------
 
@@ -591,7 +595,7 @@ ALTER TABLE `clientes`
 -- AUTO_INCREMENT de la tabla `login_attempts`
 --
 ALTER TABLE `login_attempts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT de la tabla `marcas`
@@ -609,7 +613,7 @@ ALTER TABLE `movimientos_caja`
 -- AUTO_INCREMENT de la tabla `productos`
 --
 ALTER TABLE `productos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `proveedores`
