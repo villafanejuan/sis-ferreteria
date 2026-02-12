@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 12-02-2026 a las 23:47:16
+-- Tiempo de generación: 13-02-2026 a las 00:38:51
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -82,6 +82,38 @@ CREATE TABLE `clientes` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Volcado de datos para la tabla `clientes`
+--
+
+INSERT INTO `clientes` (`id`, `nombre`, `documento`, `tipo_documento`, `telefono`, `email`, `direccion`, `ciudad`, `provincia`, `codigo_postal`, `saldo_cuenta_corriente`, `limite_credito`, `notas`, `activo`, `created_at`, `updated_at`) VALUES
+(1, 'juanjo', '3234563434343', 'DNI', '34533434562', 'admin@gmail.com', 'calle falsa 123', NULL, NULL, NULL, 1040.00, 0.00, NULL, 1, '2026-02-12 23:29:20', '2026-02-12 23:35:50');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `cuenta_corriente_movimientos`
+--
+
+CREATE TABLE `cuenta_corriente_movimientos` (
+  `id` int(11) NOT NULL,
+  `cliente_id` int(11) NOT NULL,
+  `tipo` enum('venta','pago','ajuste_debito','ajuste_credito') NOT NULL,
+  `monto` decimal(10,2) NOT NULL,
+  `saldo_historico` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `referencia_id` int(11) DEFAULT NULL,
+  `descripcion` text DEFAULT NULL,
+  `usuario_id` int(11) NOT NULL,
+  `fecha` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `cuenta_corriente_movimientos`
+--
+
+INSERT INTO `cuenta_corriente_movimientos` (`id`, `cliente_id`, `tipo`, `monto`, `saldo_historico`, `referencia_id`, `descripcion`, `usuario_id`, `fecha`) VALUES
+(1, 1, 'venta', 1040.00, 1040.00, 3, 'Venta #3', 1, '2026-02-12 23:35:50');
+
 -- --------------------------------------------------------
 
 --
@@ -117,7 +149,8 @@ INSERT INTO `login_attempts` (`id`, `username`, `ip_address`, `user_agent`, `suc
 (13, 'admin', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 1, '2026-02-12 00:16:41'),
 (14, 'admin', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 1, '2026-02-12 21:06:54'),
 (15, 'admin', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 1, '2026-02-12 21:12:20'),
-(16, 'admin', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 1, '2026-02-12 21:36:15');
+(16, 'admin', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 1, '2026-02-12 21:36:15'),
+(17, 'admin', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0', 1, '2026-02-12 23:31:25');
 
 -- --------------------------------------------------------
 
@@ -218,7 +251,7 @@ CREATE TABLE `productos` (
 --
 
 INSERT INTO `productos` (`id`, `nombre`, `descripcion`, `codigo_barra`, `modelo`, `categoria_id`, `marca_id`, `unidad_medida_id`, `proveedor_id`, `precio`, `precio_costo`, `margen_ganancia`, `stock`, `unidad_medida`, `stock_minimo`, `ubicacion_deposito`, `imagen`, `activo`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 'pedazo de chapa', '', '123123123', '2sd3das', 4, 12, 2, NULL, 520.00, 400.00, 30.00, 8.000, 'unid', 5.000, NULL, NULL, 1, NULL, '2026-02-12 00:18:09', '2026-02-12 00:31:08'),
+(1, 'pedazo de chapa', '', '123123123', '2sd3das', 4, 12, 2, NULL, 520.00, 400.00, 30.00, 6.000, 'unid', 5.000, NULL, NULL, 1, NULL, '2026-02-12 00:18:09', '2026-02-12 23:35:50'),
 (2, 'Cable 2.5mm', NULL, 'TEST-1770855977', NULL, NULL, NULL, 1, NULL, 150.50, 0.00, 30.00, 98.500, 'mts', 0.000, NULL, NULL, 1, NULL, '2026-02-12 00:26:17', '2026-02-12 00:26:17'),
 (3, 'prueba', 'articulo de prueba', '8473432', NULL, 5, NULL, 2, NULL, 130.00, 100.00, 30.00, 20.300, 'unid', 20.100, NULL, NULL, 1, NULL, '2026-02-12 21:31:32', '2026-02-12 21:31:32');
 
@@ -299,7 +332,8 @@ CREATE TABLE `turnos_caja` (
 --
 
 INSERT INTO `turnos_caja` (`id`, `user_id`, `usuario_id`, `usuario_nombre`, `monto_inicial`, `monto_final`, `monto_esperado`, `diferencia`, `estado`, `fecha_apertura`, `fecha_cierre`, `notas_apertura`, `notas_cierre`, `cerrado_por`) VALUES
-(3, 1, 1, 'Administrador', 10.00, 11.00, 1275.75, -1264.75, 'cerrado', '2026-02-12 00:16:56', '2026-02-12 21:14:02', '', NULL, NULL);
+(3, 1, 1, 'Administrador', 10.00, 11.00, 1275.75, -1264.75, 'cerrado', '2026-02-12 00:16:56', '2026-02-12 21:14:02', '', NULL, NULL),
+(4, 1, 1, 'admin', 0.00, NULL, NULL, NULL, 'abierto', '2026-02-12 23:18:31', NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -364,7 +398,7 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id`, `username`, `password`, `nombre`, `email`, `rol`, `role_id`, `activo`, `is_active`, `last_login`, `failed_attempts`, `last_failed_login`, `created_at`, `updated_at`) VALUES
-(1, 'admin', '$argon2id$v=19$m=65536,t=4,p=3$bFhBaFd4SmZVQ1Q5Q1QudA$+QmNiT+pvyXrNUofaRUislEsv2TS8VV5OWGceioi90Y', 'Administrador', 'admin@ferreteria.com', 'admin', 1, 1, 1, '2026-02-12 21:36:15', 0, NULL, '2026-02-11 23:49:57', '2026-02-12 21:36:15');
+(1, 'admin', '$argon2id$v=19$m=65536,t=4,p=3$ejZybzFmTUsxTlJKNjF4MA$uMG7kA/0Pz3uh2KFxfw8UC+GJIew4/2DrGKpMUNFK4c', 'Administrador', 'admin@ferreteria.com', 'admin', 1, 1, 1, '2026-02-12 23:31:25', 0, NULL, '2026-02-11 23:49:57', '2026-02-12 23:31:25');
 
 -- --------------------------------------------------------
 
@@ -398,7 +432,8 @@ CREATE TABLE `ventas` (
 
 INSERT INTO `ventas` (`id`, `usuario_id`, `cliente_id`, `total`, `subtotal`, `descuento_porcentaje`, `descuento_monto`, `monto_pagado`, `cambio`, `metodo_pago`, `metodo_pago_secundario`, `monto_pago_secundario`, `estado`, `notas`, `fecha`, `created_at`, `updated_at`) VALUES
 (1, 1, NULL, 225.75, 0.00, 0.00, 0.00, 225.75, 0.00, 'efectivo', NULL, 0.00, 'completada', NULL, '2026-02-12 00:26:17', '2026-02-12 00:26:17', '2026-02-12 00:26:17'),
-(2, 1, NULL, 1040.00, 0.00, 0.00, 0.00, 1040.00, 0.00, 'efectivo', NULL, 0.00, 'completada', NULL, '2026-02-12 00:31:08', '2026-02-12 00:31:08', '2026-02-12 00:31:08');
+(2, 1, NULL, 1040.00, 0.00, 0.00, 0.00, 1040.00, 0.00, 'efectivo', NULL, 0.00, 'completada', NULL, '2026-02-12 00:31:08', '2026-02-12 00:31:08', '2026-02-12 00:31:08'),
+(3, 1, 1, 1040.00, 0.00, 0.00, 0.00, 0.00, 0.00, 'cuenta_corriente', '', 0.00, 'completada', NULL, '2026-02-12 23:35:50', '2026-02-12 23:35:50', '2026-02-12 23:35:50');
 
 -- --------------------------------------------------------
 
@@ -444,7 +479,8 @@ CREATE TABLE `venta_detalles` (
 
 INSERT INTO `venta_detalles` (`id`, `venta_id`, `producto_id`, `cantidad`, `precio`, `precio_costo`, `descuento_porcentaje`, `descuento_monto`, `subtotal`, `subtotal_sin_descuento`) VALUES
 (1, 1, 2, 1.500, 150.50, 0.00, 0.00, 0.00, 225.75, 0.00),
-(2, 2, 1, 2.000, 520.00, 0.00, 0.00, 0.00, 1040.00, 0.00);
+(2, 2, 1, 2.000, 520.00, 0.00, 0.00, 0.00, 1040.00, 0.00),
+(3, 3, 1, 2.000, 520.00, 0.00, 0.00, 0.00, 1040.00, 0.00);
 
 --
 -- Índices para tablas volcadas
@@ -464,6 +500,15 @@ ALTER TABLE `clientes`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_nombre` (`nombre`),
   ADD KEY `idx_documento` (`documento`);
+
+--
+-- Indices de la tabla `cuenta_corriente_movimientos`
+--
+ALTER TABLE `cuenta_corriente_movimientos`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_cliente` (`cliente_id`),
+  ADD KEY `idx_fecha` (`fecha`),
+  ADD KEY `fk_cc_usuario` (`usuario_id`);
 
 --
 -- Indices de la tabla `login_attempts`
@@ -589,13 +634,19 @@ ALTER TABLE `categorias`
 -- AUTO_INCREMENT de la tabla `clientes`
 --
 ALTER TABLE `clientes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT de la tabla `cuenta_corriente_movimientos`
+--
+ALTER TABLE `cuenta_corriente_movimientos`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `login_attempts`
 --
 ALTER TABLE `login_attempts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT de la tabla `marcas`
@@ -631,7 +682,7 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT de la tabla `turnos_caja`
 --
 ALTER TABLE `turnos_caja`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `unidades_medida`
@@ -649,7 +700,7 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de la tabla `ventas`
 --
 ALTER TABLE `ventas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `ventas_pendientes`
@@ -661,11 +712,18 @@ ALTER TABLE `ventas_pendientes`
 -- AUTO_INCREMENT de la tabla `venta_detalles`
 --
 ALTER TABLE `venta_detalles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Restricciones para tablas volcadas
 --
+
+--
+-- Filtros para la tabla `cuenta_corriente_movimientos`
+--
+ALTER TABLE `cuenta_corriente_movimientos`
+  ADD CONSTRAINT `fk_cc_cliente` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_cc_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`);
 
 --
 -- Filtros para la tabla `movimientos_caja`
