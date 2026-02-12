@@ -1,0 +1,12 @@
+[2025-12-12 17:50:49] [WARNING] [User:6] [IP:::1] Intento de login fallido {"username":"admin","error":"SQLSTATE[42S02]: Base table or view not found: 1146 Table 'kiosco_db.permissions' doesn't exist"}
+[2025-12-12 17:53:50] [WARNING] [User:11] [IP:::1] Intento de login fallido {"username":"juanjo","error":"SQLSTATE[42S02]: Base table or view not found: 1146 Table 'kiosco_db.permissions' doesn't exist"}
+[2025-12-12 17:54:32] [WARNING] [User:9] [IP:::1] Intento de login fallido {"username":"nuevouser","error":"SQLSTATE[42S02]: Base table or view not found: 1146 Table 'kiosco_db.permissions' doesn't exist"}
+[2025-12-12 20:56:44] [WARNING] [User:6] [IP:::1] Intento de login fallido {"username":"admin","error":"SQLSTATE[42S02]: Base table or view not found: 1146 Table 'kiosco_db.permissions' doesn't exist"}
+[2025-12-12 21:05:42] [WARNING] [User:5] [IP:unknown] Diferencia significativa en cierre de caja {"shift_id":17,"diferencia":800}
+[2025-12-12 21:05:42] [WARNING] [User:5] [IP:unknown] Diferencia significativa en cierre de caja {"shift_id":18,"diferencia":-400}
+[2025-12-12 21:09:04] [WARNING] [User:9] [IP:::1] Intento de login fallido {"username":"nuevouser","error":"SQLSTATE[42S02]: Base table or view not found: 1146 Table 'kiosco_db.permissions' doesn't exist"}
+[2025-12-12 21:12:07] [WARNING] [User:6] [IP:::1] Intento de login fallido {"username":"admin","error":"SQLSTATE[42S02]: Base table or view not found: 1146 Table 'kiosco_db.permissions' doesn't exist"}
+[2025-12-12 21:17:13] [WARNING] [User:6] [IP:::1] Intento de login fallido {"username":"admin","error":"SQLSTATE[42S02]: Base table or view not found: 1146 Table 'kiosco_db.permissions' doesn't exist"}
+[2025-12-12 22:11:19] [WARNING] [User:9] [IP:::1] Intento de login fallido {"username":"nuevouser","error":"SQLSTATE[42S02]: Base table or view not found: 1146 Table 'kiosco_db.permissions' doesn't exist"}
+[2025-12-12 22:13:47] [WARNING] [User:9] [IP:::1] Intento de login fallido {"username":"nuevouser","error":"SQLSTATE[42S02]: Base table or view not found: 1146 Table 'kiosco_db.permissions' doesn't exist"}
+[2025-12-12 23:57:35] [WARNING] [User:6] [IP:::1] Intento de login fallido {"username":"admin","error":"SQLSTATE[42S02]: Base table or view not found: 1146 Table 'kiosco_db.permissions' doesn't exist"}

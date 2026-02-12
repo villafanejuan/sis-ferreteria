@@ -1,0 +1,11 @@
+[2025-12-12 17:53:38] [INFO] [User:6] [IP:::1] Usuario cerró sesión {"user_id":6}
+[2025-12-12 17:54:19] [INFO] [User:11] [IP:::1] Usuario cerró sesión {"user_id":11}
+[2025-12-12 21:05:42] [INFO] [User:5] [IP:unknown] Turno de caja cerrado {"shift_id":17,"monto_esperado":"200.00","monto_contado":1000,"diferencia":800}
+[2025-12-12 21:05:42] [INFO] [User:5] [IP:unknown] Turno de caja abierto {"shift_id":"18","monto_inicial":500}
+[2025-12-12 21:05:42] [INFO] [User:5] [IP:unknown] Turno de caja cerrado {"shift_id":18,"monto_esperado":"1000.00","monto_contado":600,"diferencia":-400}
+[2025-12-12 21:08:59] [INFO] [User:6] [IP:::1] Usuario cerró sesión {"user_id":6}
+[2025-12-12 21:12:03] [INFO] [User:9] [IP:::1] Usuario cerró sesión {"user_id":9}
+[2025-12-12 21:17:05] [INFO] [User:6] [IP:::1] Usuario cerró sesión {"user_id":6}
+[2025-12-12 22:11:15] [INFO] [User:6] [IP:::1] Usuario cerró sesión {"user_id":6}
+[2025-12-12 22:13:19] [INFO] [User:9] [IP:::1] Usuario cerró sesión {"user_id":9}
+[2025-12-12 23:57:30] [INFO] [User:9] [IP:::1] Usuario cerró sesión {"user_id":9}
