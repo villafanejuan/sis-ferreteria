@@ -1,6 +1,6 @@
 <?php
 /**
- * Punto de entrada principal - Index con login
+ * Punto de entrada principal - Index con login (Rediseñado)
  */
 
 require_once __DIR__ . '/../app/bootstrap.php';
@@ -40,78 +40,101 @@ if (isset($_SESSION['flash_message'])) {
     <title>Login - <?php echo APP_NAME; ?></title>
     <script src="assets/js/tailwindcss.js"></script>
     <link href="assets/css/fontawesome.min.css" rel="stylesheet">
+    <style>
+        .login-bg {
+            background-image: url('assets/img/pattern_tools.png'); /* Opcional si tienes un patrón */
+            background-color: #f3f4f6;
+        }
+    </style>
 </head>
 
-<body class="bg-gradient-to-br from-blue-500 to-purple-600 min-h-screen flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
-        <!-- Logo/Header -->
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full">
+        <!-- Brand -->
         <div class="text-center mb-8">
-            <div class="inline-block p-4 bg-blue-100 rounded-full mb-4">
-                <i class="fas fa-store text-4xl text-blue-600"></i>
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-800 text-yellow-500 mb-4 shadow-lg">
+                <i class="fas fa-hammer text-4xl"></i>
             </div>
-            <h1 class="text-3xl font-bold text-gray-800"><?php echo APP_NAME; ?></h1>
-            <p class="text-gray-600 mt-2">Ingresa tus credenciales para continuar</p>
+            <h1 class="text-3xl font-extrabold text-gray-800 tracking-tight">
+                FERRETERÍA
+            </h1>
+            <p class="text-gray-500 mt-2">Sistema de Gestión Integral</p>
         </div>
 
-        <!-- Mensajes Flash -->
-        <?php if ($flash): ?>
-            <div class="mb-6 p-4 rounded-lg <?php
-            echo $flash['type'] === 'error' ? 'bg-red-100 border border-red-400 text-red-700' :
-                ($flash['type'] === 'success' ? 'bg-green-100 border border-green-400 text-green-700' :
-                    'bg-blue-100 border border-blue-400 text-blue-700');
-            ?>">
-                <i class="fas fa-<?php echo $flash['type'] === 'error' ? 'exclamation-circle' :
-                    ($flash['type'] === 'success' ? 'check-circle' : 'info-circle'); ?> mr-2"></i>
-                <?php echo htmlspecialchars($flash['message']); ?>
+        <div class="bg-white rounded-lg shadow-xl overflow-hidden border border-gray-200">
+            <div class="p-8">
+                <h2 class="text-xl font-bold text-gray-700 mb-6 text-center">Iniciar Sesión</h2>
+
+                <!-- Mensajes Flash -->
+                <?php if ($flash): ?>
+                    <div class="mb-6 p-4 rounded-lg text-sm font-medium <?php
+                    echo $flash['type'] === 'error' ? 'bg-red-50 text-red-700 border border-red-200' :
+                        ($flash['type'] === 'success' ? 'bg-green-50 text-green-700 border border-green-200' :
+                            'bg-blue-50 text-blue-700 border border-blue-200');
+                    ?>">
+                        <div class="flex items-center">
+                            <i class="fas fa-<?php echo $flash['type'] === 'error' ? 'exclamation-circle' :
+                                ($flash['type'] === 'success' ? 'check-circle' : 'info-circle'); ?> mr-2"></i>
+                            <?php echo htmlspecialchars($flash['message']); ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <!-- Formulario de Login -->
+                <form method="POST" action="index.php" class="space-y-6">
+                    <input type="hidden" name="<?php echo CSRF_TOKEN_NAME; ?>" value="<?php echo $csrf_token; ?>">
+
+                    <!-- Usuario -->
+                    <div>
+                        <label for="username" class="block text-sm font-bold text-gray-700 mb-1">
+                            Usuario
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-user text-gray-400"></i>
+                            </div>
+                            <input type="text" id="username" name="username" required autofocus
+                                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition sm:text-sm"
+                                placeholder="Ej: admin">
+                        </div>
+                    </div>
+
+                    <!-- Contraseña -->
+                    <div>
+                        <label for="password" class="block text-sm font-bold text-gray-700 mb-1">
+                            Contraseña
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </div>
+                            <input type="password" id="password" name="password" required
+                                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition sm:text-sm"
+                                placeholder="••••••••">
+                        </div>
+                    </div>
+
+                    <!-- Botón Submit -->
+                    <button type="submit"
+                        class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out shadow-md">
+                        INGRESAR
+                    </button>
+                </form>
             </div>
-        <?php endif; ?>
-
-        <!-- Formulario de Login -->
-        <form method="POST" action="index.php" class="space-y-6">
-            <input type="hidden" name="<?php echo CSRF_TOKEN_NAME; ?>" value="<?php echo $csrf_token; ?>">
-
-            <!-- Usuario -->
-            <div>
-                <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-user mr-2"></i>Usuario
-                </label>
-                <input type="text" id="username" name="username" required autofocus
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                    placeholder="Ingresa tu usuario">
+            
+            <div class="bg-gray-50 px-8 py-4 border-t border-gray-100 text-center">
+                <p class="text-xs text-gray-500">
+                    &copy; <?php echo date('Y'); ?> <?php echo APP_NAME; ?>. Todos los derechos reservados.
+                </p>
             </div>
-
-            <!-- Contraseña -->
-            <div>
-                <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-lock mr-2"></i>Contraseña
-                </label>
-                <input type="password" id="password" name="password" required
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                    placeholder="Ingresa tu contraseña">
-            </div>
-
-            <!-- Botón Submit -->
-            <button type="submit"
-                class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 px-4 rounded-lg hover:from-blue-600 hover:to-purple-700 transition duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                <i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión
-            </button>
-        </form>
-
-        <!-- Footer -->
-        <div class="mt-8 text-center text-sm text-gray-600">
-            <p>
-                <i class="fas fa-shield-alt mr-1"></i>
-                Sesión segura con encriptación
-            </p>
-            <p class="mt-2 text-xs">
-                Usuario por defecto: <strong>admin</strong> / Contraseña: <strong>password</strong>
+        </div>
+        
+        <!-- Info Footer -->
+        <div class="mt-6 text-center">
+             <p class="text-xs text-gray-400">
+                <i class="fas fa-code mr-1"></i> Versión 2.1
             </p>
         </div>
-    </div>
-
-    <!-- Información de versión -->
-    <div class="fixed bottom-4 right-4 text-white text-sm bg-black bg-opacity-30 px-4 py-2 rounded-lg">
-        <i class="fas fa-code mr-2"></i>v2.0 Professional
     </div>
 </body>
 

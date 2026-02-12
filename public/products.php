@@ -110,13 +110,16 @@ if ($show_deleted) {
 }
 
 if (!empty($search)) {
-    $sql .= " AND (p.nombre LIKE :search OR p.codigo_barra LIKE :search)";
+    $sql .= " AND (p.nombre LIKE :search1 OR p.codigo_barra LIKE :search2)";
 }
 
 $sql .= " ORDER BY p.nombre LIMIT 100"; // Limit to keep it snappy
 
 $stmt = $pdo->prepare($sql);
-if (!empty($search)) $stmt->bindValue(':search', "%$search%");
+if (!empty($search)) {
+    $stmt->bindValue(':search1', "%$search%");
+    $stmt->bindValue(':search2', "%$search%");
+}
 $stmt->execute();
 $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

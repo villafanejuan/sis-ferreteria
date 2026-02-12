@@ -84,11 +84,18 @@ if (isset($_SESSION['user_id'])) {
                 <i class="fas fa-user-circle text-lg mr-2"></i>
                 <span class="font-semibold"><?php echo $_SESSION['username'] ?? 'Usuario'; ?></span>
             </button>
-            <div
-                class="absolute right-0 mt-2 w-48 bg-white text-gray-800 rounded shadow-xl hidden group-hover:block border border-gray-200">
-                <a href="logout.php" class="block px-4 py-2 hover:bg-gray-100 text-red-600 font-bold">
-                    <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
-                </a>
+            <!-- Dropdown Menu -->
+            <div class="absolute right-0 top-full pt-2 w-48 hidden group-hover:block z-50">
+                <div class="bg-white text-gray-800 rounded shadow-xl border border-gray-200 overflow-hidden">
+                    <div class="px-4 py-3 border-b border-gray-100 bg-gray-50">
+                        <p class="text-xs text-gray-500 uppercase">Conectado como</p>
+                        <p class="font-bold text-sm truncate"><?php echo $_SESSION['username'] ?? 'User'; ?></p>
+                    </div>
+                    
+                    <a href="logout.php" class="block px-4 py-2 hover:bg-red-50 text-red-600 font-bold border-t border-gray-100">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
+                    </a>
+                </div>
             </div>
         </div>
     </div>

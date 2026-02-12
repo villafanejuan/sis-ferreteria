@@ -35,8 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $total_sistema = $turno['monto_inicial'] + $ventas['total'];
                 $diferencia = $monto_final - $total_sistema;
 
-                $sql = "UPDATE turnos_caja SET fecha_cierre = NOW(), estado = 'cerrado', monto_final = ?, ventas_total = ?, diferencia = ? WHERE id = ?";
-                $db->query($sql, [$monto_final, $ventas['total'], $diferencia, $turno['id']]);
+                $sql = "UPDATE turnos_caja SET fecha_cierre = NOW(), estado = 'cerrado', monto_final = ?, monto_esperado = ?, diferencia = ? WHERE id = ?";
+                $db->query($sql, [$monto_final, $total_sistema, $diferencia, $turno['id']]);
                 header("Location: cash.php?msg=closed");
                 exit;
             }
