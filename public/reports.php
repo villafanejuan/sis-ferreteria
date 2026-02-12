@@ -112,6 +112,7 @@ $usuarios = $db->fetchAll("SELECT id, username FROM usuarios ORDER BY username")
                             <th class="w-20">#Ticket</th>
                             <th>Fecha</th>
                             <th>Vendedor</th>
+                            <th>Método</th>
                             <th class="text-right">Total</th>
                             <th class="text-center w-24">Acción</th>
                         </tr>
@@ -122,6 +123,11 @@ $usuarios = $db->fetchAll("SELECT id, username FROM usuarios ORDER BY username")
                                 <td class="font-mono-num text-xs font-bold text-gray-600">#<?php echo $v['id']; ?></td>
                                 <td class="text-sm"><?php echo date('d/m/Y H:i', strtotime($v['fecha'])); ?></td>
                                 <td class="text-sm"><i class="fas fa-user-circle mr-1 text-gray-400"></i><?php echo htmlspecialchars($v['vendedor']); ?></td>
+                                <td class="text-sm">
+                                    <span class="px-2 py-1 rounded text-xs font-bold <?php echo $v['metodo_pago'] == 'cuenta_corriente' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'; ?>">
+                                        <?php echo ucfirst(str_replace('_', ' ', $v['metodo_pago'])); ?>
+                                    </span>
+                                </td>
                                 <td class="text-right font-mono-num font-bold text-gray-800">$<?php echo number_format($v['total'], 2); ?></td>
                                 <td class="text-center">
                                     <button onclick="viewTicket(<?php echo $v['id']; ?>)" class="text-blue-600 hover:text-blue-800 text-xs font-bold">

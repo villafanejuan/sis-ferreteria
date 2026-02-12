@@ -42,6 +42,35 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $turnoAbierto) {
             exit;
         }
 
+        // --- CLIENTES ---
+        if (isset($_POST['search_client'])) {
+            $term = sanitize($_POST['term']);
+            $sql = "SELECT id, nombre, documento, saldo_cuenta_corriente, limite_credito FROM clientes WHERE (nombre LIKE ? OR documento LIKE ?) AND activo = 1 LIMIT 10";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute(["%$term%", "%$term%"]);
+            echo json_encode(['success' => true, 'results' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+            exit;
+        }
+
+        if (isset($_POST['set_client'])) {
+            $id = intval($_POST['client_id']);
+            if ($id > 0) {
+                $stmt = $pdo->prepare("SELECT id, nombre, saldo_cuenta_corriente, limite_credito, documento FROM clientes WHERE id = ?");
+                $stmt->execute([$id]);
+                $client = $stmt->fetch(PDO::FETCH_ASSOC);
+                if ($client) {
+                    $_SESSION['pos_client'] = $client;
+                    echo json_encode(['success' => true, 'client' => $client]);
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Cliente no encontrado']);
+                }
+            } else {
+                unset($_SESSION['pos_client']);
+                echo json_encode(['success' => true]);
+            }
+            exit;
+        }
+
         // --- AGREGAR AL CARRITO ---
         if (isset($_POST['add_to_cart'])) {
             $producto_id = intval($_POST['producto_id']);
@@ -103,16 +132,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $turnoAbierto) {
 
                 $total = calculateTotal($carrito);
                 $pago = floatval($_POST['amount_paid']);
-                $cambio = $pago - $total;
+                $metodo = $_POST['payment_method'] ?? 'efectivo';
+                $referencia = sanitize($_POST['payment_reference'] ?? '');
+                $cliente_id = isset($_SESSION['pos_client']) ? $_SESSION['pos_client']['id'] : null;
 
-                if ($pago < $total) {
-                    throw new Exception("Monto insuficiente");
+                // Validación Cuenta Corriente
+                if ($metodo === 'cuenta_corriente') {
+                    if (!$cliente_id) throw new Exception("Debe seleccionar un cliente para Crédito");
+                    $pago = 0; 
+                    $cambio = 0;
+                } else if ($metodo === 'efectivo') {
+                    if ($pago < $total) throw new Exception("Monto insuficiente");
+                    $cambio = $pago - $total;
+                } else {
+                    // Transferencia / Debito: Se asume pago exacto
+                    $pago = $total;
+                    $cambio = 0;
                 }
 
                 // Insertar Venta
-                $stmt = $pdo->prepare("INSERT INTO ventas (usuario_id, total, monto_pagado, cambio, fecha) VALUES (?, ?, ?, ?, NOW())");
-                $stmt->execute([$_SESSION['user_id'], $total, $pago, $cambio]);
+                $stmt = $pdo->prepare("INSERT INTO ventas (usuario_id, cliente_id, total, monto_pagado, cambio, metodo_pago, metodo_pago_secundario, fecha) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
+                $stmt->execute([$_SESSION['user_id'], $cliente_id, $total, $pago, $cambio, $metodo, $referencia]);
                 $ventaId = $pdo->lastInsertId();
+
+                // Registrar en Cuenta Corriente
+                if ($metodo === 'cuenta_corriente') {
+                    $stmt = $pdo->prepare("UPDATE clientes SET saldo_cuenta_corriente = saldo_cuenta_corriente + ? WHERE id = ?");
+                    $stmt->execute([$total, $cliente_id]);
+                    
+                    $nuevoSaldo = $_SESSION['pos_client']['saldo_cuenta_corriente'] + $total; // Aprox
+                    
+                    $stmt = $pdo->prepare("INSERT INTO cuenta_corriente_movimientos (cliente_id, tipo, monto, saldo_historico, descripcion, referencia_id, usuario_id, fecha) VALUES (?, 'venta', ?, ?, ?, ?, ?, NOW())");
+                    $stmt->execute([$cliente_id, $total, $nuevoSaldo, "Venta #$ventaId", $ventaId, $_SESSION['user_id']]);
+                }
 
                 // Detalles y Stock
                 foreach ($carrito as $item) {
@@ -135,15 +187,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $turnoAbierto) {
                     $stmtUpd->execute([$item['cantidad'], $item['id']]);
                 }
 
-                // Movimiento de Caja
-                $stmtCaja = $pdo->prepare("INSERT INTO movimientos_caja (turno_id, tipo, monto, descripcion, venta_id, created_at, usuario_id, fecha) VALUES (?, 'venta', ?, ?, ?, NOW(), ?, NOW())");
-                $stmtCaja->execute([$turnoAbierto['id'], $total, "Venta #$ventaId", $ventaId, $_SESSION['user_id']]);
+                // Movimiento de Caja (SOLO SI NO ES CUENTA CORRIENTE)
+                if ($metodo !== 'cuenta_corriente') {
+                    $stmtCaja = $pdo->prepare("INSERT INTO movimientos_caja (turno_id, tipo, monto, descripcion, venta_id, created_at, usuario_id, fecha) VALUES (?, 'venta', ?, ?, ?, NOW(), ?, NOW())");
+                    $stmtCaja->execute([$turnoAbierto['id'], $total, "Venta #$ventaId", $ventaId, $_SESSION['user_id']]);
+                }
 
                 $pdo->commit();
 
-                // Limpiar carrito
+                // Limpiar carrito y cliente
                 unset($_SESSION['carrito']);
-
+                unset($_SESSION['pos_client']);
                 echo json_encode(['success' => true, 'message' => 'Venta completada', 'change' => $cambio, 'ticket_id' => $ventaId]);
             } catch (Exception $e) {
                 $pdo->rollBack();
@@ -155,6 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $turnoAbierto) {
         // --- CANCELAR VENTA (LIMPIAR) ---
         if (isset($_POST['cancel_sale'])) {
             unset($_SESSION['carrito']);
+            unset($_SESSION['pos_client']);
             echo json_encode(['success' => true]);
             exit;
         }
@@ -187,13 +242,14 @@ $cartTotal = calculateTotal($carrito);
         /* Layout específico para Ventas (Split View sin scroll global) */
         body {
             overflow: hidden;
-            height: 100vh;
+            height: 100vh; /* Fallback */
+            height: 100dvh;
         }
 
         /* Ajuste para que el contenido ocupe el resto de la altura */
         .flex-1.overflow-hidden {
-            height: calc(100vh - 50px);
-            /* Ajuste aproximado por el navbar */
+            height: calc(100dvh - 70px);
+            /* Importante: Restar altura de Navbar + un margen de seguridad */
         }
     </style>
 </head>
@@ -260,6 +316,17 @@ $cartTotal = calculateTotal($carrito);
                     <span><kbd class="bg-white border rounded px-1">↓/↑</kbd> Navegar</span>
                     <span><kbd class="bg-white border rounded px-1">Enter</kbd> Agregar</span>
                     <span><kbd class="bg-white border rounded px-1">F2</kbd> Foco Buscar</span>
+                    <span><kbd class="bg-white border rounded px-1">F3</kbd> Cliente</span>
+                </div>
+            </div>
+
+            <!-- Modal Cliente -->
+            <div id="client_modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+                <div class="bg-white rounded-lg shadow-xl p-6 w-96">
+                    <h3 class="text-lg font-bold mb-4">Seleccionar Cliente</h3>
+                    <input type="text" id="client_search" class="w-full border p-2 rounded mb-4" placeholder="Buscar por Nombre o DNI..." autocomplete="off">
+                    <div id="client_results" class="max-h-60 overflow-y-auto border border-gray-100 rounded"></div>
+                    <button onclick="closeClientModal()" class="mt-4 w-full bg-gray-200 text-gray-700 py-2 rounded">Cerrar</button>
                 </div>
             </div>
 
@@ -267,9 +334,16 @@ $cartTotal = calculateTotal($carrito);
             <div class="w-2/5 bg-gray-50 flex flex-col h-full shadow-inner">
                 <!-- Título -->
                 <div class="p-3 bg-white border-b border-gray-200 flex justify-between items-center">
-                    <h2 class="font-bold text-gray-800"><i class="fas fa-shopping-cart text-blue-600 mr-2"></i>Ticket de
-                        Venta</h2>
-                    <button onclick="clearCart()" class="text-red-500 text-xs hover:underline">[F4] Cancelar Todo</button>
+                    <div>
+                        <h2 class="font-bold text-gray-800"><i class="fas fa-shopping-cart text-blue-600 mr-2"></i>Ticket</h2>
+                         <div id="selected_client_display" class="text-xs text-gray-500 mt-1 cursor-pointer hover:text-blue-600" onclick="openClientModal()">
+                            <i class="fas fa-user mr-1"></i> CONSUMIDOR FINAL
+                        </div>
+                    </div>
+                    <div>
+                         <button onclick="openClientModal()" class="bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded hover:bg-blue-200 mr-2">[F3] Cliente</button>
+                         <button onclick="clearCart()" class="text-red-500 text-xs hover:underline">[F4] Cancelar</button>
+                    </div>
                 </div>
 
                 <!-- Lista de Items -->
@@ -308,35 +382,52 @@ $cartTotal = calculateTotal($carrito);
                 </div>
 
                 <!-- Panel de Totales y Pago -->
-                <div class="bg-white p-4 border-t border-gray-200 shadow-lg z-10">
-                    <div class="flex justify-between items-end mb-4">
-                        <span class="text-gray-500 text-lg">Total a Pagar:</span>
-                        <span class="text-4xl font-bold text-gray-800"
-                            id="display_total">$<?php echo number_format($cartTotal, 2); ?></span>
+                <div class="bg-white p-2 border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20 mb-4">
+                    
+                    <!-- Fila Superior: Total (Izq) + Metodo (Der) -->
+                    <div class="flex justify-between items-center mb-1">
+                        <div class="flex items-baseline gap-2">
+                             <span class="text-[10px] text-gray-500 font-bold uppercase">Total:</span>
+                             <span class="text-xl font-black text-gray-800 tracking-tight" id="display_total">$<?php echo number_format($cartTotal, 2); ?></span>
+                        </div>
+                        <div class="w-40">
+                             <select id="payment_method" class="w-full border-gray-300 rounded p-1 h-7 text-xs bg-gray-50 focus:ring-blue-500 font-bold" onchange="togglePaymentFields()">
+                                <option value="efectivo">Efectivo</option>
+                                <option value="transferencia">Transferencia</option>
+                                <option value="cuenta_corriente">Cuenta Corriente</option>
+                                <option value="tarjeta_debito">Débito</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div class="relative">
-                            <label class="block text-xs text-gray-500 uppercase font-bold mb-1">Monto Abonado</label>
-                            <div class="relative">
-                                <span class="absolute left-3 top-2 text-gray-400">$</span>
+                    <!-- Fila Central: Campos Dinamicos -->
+                    <div id="payment_fields_container" class="mb-2 min-h-[36px]">
+                         <!-- Efectivo -->
+                        <div class="flex gap-2" id="cash_fields">
+                            <div class="w-1/2 relative">
                                 <input type="number" id="amount_paid"
-                                    class="w-full border border-gray-300 rounded p-2 pl-6 text-xl font-bold text-gray-700 bg-gray-50"
-                                    placeholder="0.00" step="0.01">
+                                    class="w-full border border-gray-300 rounded p-1 pl-4 text-sm font-bold text-gray-700 h-8 focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="Abono" step="0.01">
+                                <span class="absolute left-1.5 top-1.5 text-gray-400 text-xs">$</span>
+                            </div>
+                            <div class="w-1/2">
+                                <div class="text-sm font-bold text-green-600 px-2 text-right bg-green-50 rounded border border-green-100 h-8 flex items-center justify-end"
+                                    id="change_display">Cambio: $0.00</div>
                             </div>
                         </div>
-                        <div>
-                            <label class="block text-xs text-gray-500 uppercase font-bold mb-1">Su Cambio</label>
-                            <div class="text-xl font-bold text-green-600 p-2 text-right bg-green-50 rounded border border-green-100"
-                                id="change_display">$0.00</div>
+
+                        <!-- Referencia (Transferencia/Debito) -->
+                         <div id="transfer_fields" class="hidden flex gap-2">
+                            <input type="text" id="transfer_name" class="w-1/2 border border-gray-300 rounded p-1 text-xs uppercase h-8" placeholder="NOMBRE CLIENTE">
+                            <input type="text" id="transfer_phone" class="w-1/2 border border-gray-300 rounded p-1 text-xs uppercase h-8" placeholder="TELEFONO">
                         </div>
                     </div>
 
                     <input type="hidden" id="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
 
                     <button id="btn_checkout" onclick="completeSale()"
-                        class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded shadow-lg text-lg uppercase tracking-wide transition transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
-                        [F9] CONFIRMAR VENTA
+                        class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-0 rounded shadow h-10 flex items-center justify-center text-sm uppercase tracking-wider transition-colors">
+                        [F9] CONFIRMAR
                     </button>
                 </div>
             </div>
@@ -367,10 +458,12 @@ $cartTotal = calculateTotal($carrito);
             let productsCache = [];
             let selectedProductForModal = null;
             let cartTotal = <?php echo floatval($cartTotal); ?>;
+            let currentClient = <?php echo isset($_SESSION['pos_client']) ? json_encode($_SESSION['pos_client']) : 'null'; ?>;
 
             // --- INICIALIZACIÓN ---
             document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('search_input').focus();
+                updateClientDisplay();
                 updateChange();
             });
 
@@ -380,6 +473,10 @@ $cartTotal = calculateTotal($carrito);
                     e.preventDefault();
                     document.getElementById('search_input').focus();
                     document.getElementById('search_input').select();
+                }
+                if (e.key === 'F3') {
+                    e.preventDefault();
+                    openClientModal();
                 }
                 if (e.key === 'F9') {
                     e.preventDefault();
@@ -617,6 +714,46 @@ $cartTotal = calculateTotal($carrito);
             }
 
             // --- PAGO ---
+            function togglePaymentFields() {
+                const method = document.getElementById('payment_method').value;
+                const cashFields = document.getElementById('cash_fields');
+                const transFields = document.getElementById('transfer_fields');
+                const btn = document.getElementById('btn_checkout');
+                
+                // Reset visibilidad
+                cashFields.classList.add('hidden');
+                transFields.classList.add('hidden');
+                btn.disabled = false;
+                btn.classList.remove('bg-gray-400');
+                
+                if (method === 'cuenta_corriente') {
+                    // Validar si hay cliente
+                    if (!currentClient) {
+                       btn.disabled = true;
+                       btn.innerText = 'Seleccione Cliente';
+                       btn.classList.add('bg-gray-400');
+                       btn.classList.remove('bg-green-600', 'bg-red-600', 'bg-blue-600');
+                    } else {
+                        btn.innerText = '[F9] Confirmar Crédito';
+                        btn.classList.add('bg-blue-600');
+                        btn.classList.remove('bg-green-600');
+                    }
+                } else if (method === 'efectivo') {
+                    cashFields.classList.remove('hidden');
+                    btn.classList.add('bg-green-600');
+                    btn.classList.remove('bg-blue-600');
+                    btn.innerText = '[F9] EFECTIVO';
+                    updateChange();
+                } else {
+                    // Transferencia / Debito
+                    transFields.classList.remove('hidden');
+                    btn.classList.add('bg-green-600');
+                    btn.classList.remove('bg-blue-600');
+                    btn.innerText = '[F9] CONFIRMAR TRSF.';
+                    document.getElementById('transfer_name').focus();
+                }
+            }
+
             function updateTotal(total) {
                 cartTotal = parseFloat(total);
                 document.getElementById('display_total').innerText = '$' + cartTotal.toFixed(2);
@@ -627,6 +764,9 @@ $cartTotal = calculateTotal($carrito);
             amountInput.addEventListener('input', updateChange);
 
             function updateChange() {
+                if (document.getElementById('payment_method').value === 'cuenta_corriente') {
+                    return; // No validar cambio
+                }
                 const paid = parseFloat(amountInput.value) || 0;
                 const change = paid - cartTotal;
                 const changeDisplay = document.getElementById('change_display');
@@ -651,8 +791,10 @@ $cartTotal = calculateTotal($carrito);
             }
 
             async function completeSale() {
+                const method = document.getElementById('payment_method').value;
                 const paid = parseFloat(amountInput.value) || 0;
-                if (paid < cartTotal) return alert('Monto insuficiente');
+
+                if (method === 'efectivo' && paid < cartTotal) return alert('Monto insuficiente');
 
                 if (!confirm('¿Confirmar venta?')) return;
 
@@ -661,6 +803,16 @@ $cartTotal = calculateTotal($carrito);
                 formData.append('ajax', '1');
                 formData.append('complete_sale', '1');
                 formData.append('amount_paid', paid);
+                formData.append('payment_method', document.getElementById('payment_method').value);
+                
+                // Combinar nombre y telefono en referencia para backend
+                const tName = document.getElementById('transfer_name').value.trim();
+                const tPhone = document.getElementById('transfer_phone').value.trim();
+                let ref = '';
+                if(tName || tPhone) {
+                    ref = `Nombre: ${tName} - Tel: ${tPhone}`;
+                }
+                formData.append('payment_reference', ref);
 
                 try {
                     const res = await fetch('sales.php', { method: 'POST', body: formData });
@@ -676,6 +828,72 @@ $cartTotal = calculateTotal($carrito);
                     console.error(err);
                     alert('Error al procesar venta');
                 }
+            }
+
+            // --- CLIENTES ---
+            function openClientModal() {
+                document.getElementById('client_modal').classList.remove('hidden');
+                document.getElementById('client_search').focus();
+            }
+            function closeClientModal() {
+                document.getElementById('client_modal').classList.add('hidden');
+                document.getElementById('search_input').focus();
+            }
+
+            document.getElementById('client_search').addEventListener('input', (e) => {
+                const term = e.target.value;
+                if(term.length < 2) return;
+                
+                // Debounce simple
+                clearTimeout(window.clientSearchTimer);
+                window.clientSearchTimer = setTimeout(async () => {
+                    const formData = new FormData();
+                    formData.append('csrf_token', document.getElementById('csrf_token').value);
+                    formData.append('search_client', '1');
+                    formData.append('term', term);
+                    
+                    const res = await fetch('sales.php', { method: 'POST', body: formData });
+                    const data = await res.json();
+                    
+                    const container = document.getElementById('client_results');
+                    container.innerHTML = '';
+                    
+                    if(data.success && data.results) {
+                        data.results.forEach(c => {
+                             const div = document.createElement('div');
+                             div.className = 'p-2 border-b hover:bg-gray-100 cursor-pointer';
+                             div.innerHTML = `<b>${c.nombre}</b> <span class="text-xs text-gray-500">${c.documento}</span>`;
+                             div.onclick = () => selectClient(c.id);
+                             container.appendChild(div);
+                        });
+                    }
+                }, 300);
+            });
+
+            async function selectClient(id) {
+                const formData = new FormData();
+                formData.append('csrf_token', document.getElementById('csrf_token').value);
+                formData.append('set_client', '1');
+                formData.append('client_id', id); // 0 para quitar
+
+                const res = await fetch('sales.php', { method: 'POST', body: formData });
+                const data = await res.json();
+                
+                if(data.success) {
+                    currentClient = data.client || null;
+                    updateClientDisplay();
+                    closeClientModal();
+                    togglePaymentFields();
+                }
+            }
+
+            function updateClientDisplay() {
+                 const div = document.getElementById('selected_client_display');
+                 if(currentClient) {
+                     div.innerHTML = `<i class="fas fa-user-check text-green-500 mr-1"></i> ${currentClient.nombre} <span class="text-xs ml-2 ${parseFloat(currentClient.saldo_cuenta_corriente) > 0 ? 'text-red-500' : 'text-green-500'}">Saldo: $${currentClient.saldo_cuenta_corriente}</span>`;
+                 } else {
+                     div.innerHTML = `<i class="fas fa-user mr-1"></i> CONSUMIDOR FINAL`;
+                 }
             }
         </script>
     <?php endif; ?>

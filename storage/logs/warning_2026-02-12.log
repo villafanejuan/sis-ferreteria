@@ -1,3 +1,4 @@
 [2026-02-12 18:06:54] [WARNING] [User:1] [IP:::1] Intento de login fallido {"username":"admin","error":"SQLSTATE[42S02]: Base table or view not found: 1146 Table 'ferreteria_db.permissions' doesn't exist"}
 [2026-02-12 18:12:20] [WARNING] [User:1] [IP:::1] Intento de login fallido {"username":"admin","error":"SQLSTATE[42S02]: Base table or view not found: 1146 Table 'ferreteria_db.permissions' doesn't exist"}
 [2026-02-12 18:36:15] [WARNING] [User:1] [IP:::1] Intento de login fallido {"username":"admin","error":"SQLSTATE[42S02]: Base table or view not found: 1146 Table 'ferreteria_db.permissions' doesn't exist"}
+[2026-02-12 20:31:25] [WARNING] [User:1] [IP:::1] Intento de login fallido {"username":"admin","error":"SQLSTATE[42S02]: Base table or view not found: 1146 Table 'ferreteria_db.permissions' doesn't exist"}

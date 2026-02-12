@@ -59,6 +59,13 @@ if (isset($_SESSION['user_id'])) {
                 </a>
             <?php endif; ?>
 
+            <?php if (canAccess('sales')): // O rol especifico para clientes ?>
+                <a href="clients.php"
+                    class="<?php echo $current_page == 'clients.php' ? 'text-white font-bold bg-gray-700 rounded px-2 py-1' : 'text-gray-300 hover:text-white px-2 py-1'; ?>">
+                    <i class="fas fa-users mr-1"></i>Clientes
+                </a>
+            <?php endif; ?>
+
             <?php if (checkAdmin()): ?>
                 <a href="users.php"
                     class="<?php echo $current_page == 'users.php' ? 'text-white font-bold bg-gray-700 rounded px-2 py-1' : 'text-gray-300 hover:text-white px-2 py-1'; ?>">
