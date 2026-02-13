@@ -30,12 +30,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $turnoAbierto) {
             // Búsqueda por código exacto primero, luego por nombre
             $sql = "SELECT id, codigo_barra, nombre, precio, stock, unidad_medida 
                     FROM productos 
-                    WHERE (codigo_barra = ? OR id = ?)
-                    OR nombre LIKE ? 
+                    WHERE ((codigo_barra = ? OR id = ?)
+                    OR nombre LIKE ?) AND deleted_at IS NULL
                     ORDER BY nombre LIMIT 20";
             $stmt = $pdo->prepare($sql);
             $likeTerm = "%$term%";
             $stmt->execute([$term, $term, $likeTerm]);
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            echo json_encode(['success' => true, 'results' => $results]);
+            exit;
+        }
+
+        // --- PRODUCTOS INICIALES ---
+        if (isset($_POST['get_initial_products'])) {
+            $sql = "SELECT id, codigo_barra, nombre, precio, stock, unidad_medida 
+                    FROM productos 
+                    WHERE deleted_at IS NULL
+                    ORDER BY codigo_barra ASC LIMIT 50";
+            $stmt = $pdo->query($sql);
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             echo json_encode(['success' => true, 'results' => $results]);
@@ -78,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $turnoAbierto) {
 
             if ($producto_id > 0 && $cantidad > 0) {
                 // Verificar stock
-                $stmt = $pdo->prepare("SELECT id, codigo_barra, nombre, precio, stock, unidad_medida FROM productos WHERE id = ?");
+                $stmt = $pdo->prepare("SELECT id, codigo_barra, nombre, precio, stock, unidad_medida FROM productos WHERE id = ? AND deleted_at IS NULL");
                 $stmt->execute([$producto_id]);
                 $prod = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -169,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $turnoAbierto) {
                 // Detalles y Stock
                 foreach ($carrito as $item) {
                     // Verificar stock nuevamente (concurrencia básica)
-                    $stmtStock = $pdo->prepare("SELECT stock FROM productos WHERE id = ? FOR UPDATE");
+                    $stmtStock = $pdo->prepare("SELECT stock FROM productos WHERE id = ? AND deleted_at IS NULL FOR UPDATE");
                     $stmtStock->execute([$item['id']]);
                     $stockActual = $stmtStock->fetchColumn();
 
@@ -465,6 +478,7 @@ $cartTotal = calculateTotal($carrito);
                 document.getElementById('search_input').focus();
                 updateClientDisplay();
                 updateChange();
+                loadInitialProducts();
             });
 
             // --- EVENTOS DE TECLADO GLOBALES ---
@@ -501,13 +515,35 @@ $cartTotal = calculateTotal($carrito);
                 clearTimeout(debounceTimer);
                 const term = e.target.value.trim();
                 if (term.length < 2) {
-                    document.getElementById('results_body').innerHTML = '<tr class="text-gray-400 text-center"><td colspan="5" class="py-10">Escribe para buscar...</td></tr>';
+                    loadInitialProducts();
                     return;
                 }
 
                 document.getElementById('search_loading').classList.remove('hidden');
                 debounceTimer = setTimeout(() => searchProducts(term), 300);
             });
+
+            async function loadInitialProducts() {
+                const formData = new FormData();
+                formData.append('csrf_token', document.getElementById('csrf_token').value);
+                formData.append('ajax', '1');
+                formData.append('get_initial_products', '1');
+
+                document.getElementById('search_loading').classList.remove('hidden');
+                try {
+                    const res = await fetch('sales.php', { method: 'POST', body: formData });
+                    const data = await res.json();
+                    document.getElementById('search_loading').classList.add('hidden');
+
+                    if (data.success) {
+                        productsCache = data.results;
+                        renderResults(data.results);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    document.getElementById('search_loading').classList.add('hidden');
+                }
+            }
 
             // Navegación en resultados
             searchInput.addEventListener('keydown', (e) => {
@@ -764,13 +800,25 @@ $cartTotal = calculateTotal($carrito);
             amountInput.addEventListener('input', updateChange);
 
             function updateChange() {
-                if (document.getElementById('payment_method').value === 'cuenta_corriente') {
-                    return; // No validar cambio
+                const method = document.getElementById('payment_method').value;
+                const btn = document.getElementById('btn_checkout');
+                const changeDisplay = document.getElementById('change_display');
+
+                if (method === 'cuenta_corriente' || method === 'transferencia' || method === 'tarjeta_debito') {
+                    // No validar cambio para métodos que no son efectivo
+                    btn.disabled = false;
+                    changeDisplay.innerText = '$0.00';
+                    changeDisplay.classList.remove('text-red-600');
+                    changeDisplay.classList.add('text-green-600');
+                    
+                    if (cartTotal === 0) {
+                         btn.disabled = true;
+                    }
+                    return; 
                 }
+                
                 const paid = parseFloat(amountInput.value) || 0;
                 const change = paid - cartTotal;
-                const changeDisplay = document.getElementById('change_display');
-                const btn = document.getElementById('btn_checkout');
 
                 if (change >= 0 && cartTotal > 0) {
                     changeDisplay.innerText = '$' + change.toFixed(2);
