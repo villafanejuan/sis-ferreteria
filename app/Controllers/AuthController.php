@@ -24,7 +24,7 @@ class AuthController extends Controller
     {
         // Si ya está autenticado, redirigir al dashboard
         if (isset($_SESSION['user_id'])) {
-            $this->redirect('/sis-ferreteria/public/dashboard.php');
+            $this->redirect('dashboard.php');
         }
 
         // Generar CSRF token
@@ -96,7 +96,7 @@ class AuthController extends Controller
             // Regenerar CSRF token
             Security::regenerateCsrf();
 
-            $this->redirect('/sis-ferreteria/public/dashboard.php');
+            $this->redirect('dashboard.php');
 
         } catch (Exception $e) {
             Logger::warning('Intento de login fallido', [

@@ -9,7 +9,7 @@ $authController = new AuthController();
 
 // Si ya está autenticado, redirigir
 if (isset($_SESSION['user_id'])) {
-    header('Location: /sis-ferreteria/public/dashboard.php');
+    header('Location: ' . rtrim(APP_URL, '/') . '/dashboard.php');
     exit;
 }
 
