@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 18-02-2026 a las 17:24:48
+-- Tiempo de generación: 18-02-2026 a las 18:55:13
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -114,13 +114,6 @@ CREATE TABLE `clientes` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Volcado de datos para la tabla `clientes`
---
-
-INSERT INTO `clientes` (`id`, `nombre`, `documento`, `tipo_documento`, `telefono`, `email`, `direccion`, `ciudad`, `provincia`, `codigo_postal`, `saldo_cuenta_corriente`, `limite_credito`, `notas`, `activo`, `created_at`, `updated_at`) VALUES
-(1, 'juanjo', '3234563434343', 'DNI', '34533434562', 'admin@gmail.com', 'calle falsa 123', NULL, NULL, NULL, 2080.00, 0.00, NULL, 1, '2026-02-12 23:29:20', '2026-02-13 18:53:26');
-
 -- --------------------------------------------------------
 
 --
@@ -138,14 +131,6 @@ CREATE TABLE `cuenta_corriente_movimientos` (
   `usuario_id` int(11) NOT NULL,
   `fecha` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Volcado de datos para la tabla `cuenta_corriente_movimientos`
---
-
-INSERT INTO `cuenta_corriente_movimientos` (`id`, `cliente_id`, `tipo`, `monto`, `saldo_historico`, `referencia_id`, `descripcion`, `usuario_id`, `fecha`) VALUES
-(1, 1, 'venta', 1040.00, 1040.00, 3, 'Venta #3', 1, '2026-02-12 23:35:50'),
-(2, 1, 'venta', 1040.00, 2080.00, 4, 'Venta #4', 1, '2026-02-13 18:53:26');
 
 -- --------------------------------------------------------
 
@@ -235,7 +220,10 @@ INSERT INTO `login_attempts` (`id`, `username`, `ip_address`, `user_agent`, `suc
 (15, 'admin', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 1, '2026-02-12 21:12:20'),
 (16, 'admin', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 1, '2026-02-12 21:36:15'),
 (17, 'admin', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0', 1, '2026-02-12 23:31:25'),
-(18, 'admin', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 1, '2026-02-13 18:50:52');
+(18, 'admin', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 1, '2026-02-13 18:50:52'),
+(19, 'admin', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 1, '2026-02-18 17:30:04'),
+(20, 'admin', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 1, '2026-02-18 17:49:36'),
+(21, 'admin', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 1, '2026-02-18 17:50:01');
 
 -- --------------------------------------------------------
 
@@ -313,15 +301,6 @@ CREATE TABLE `movimientos_caja` (
   `fecha` timestamp NOT NULL DEFAULT current_timestamp(),
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Volcado de datos para la tabla `movimientos_caja`
---
-
-INSERT INTO `movimientos_caja` (`id`, `turno_id`, `tipo`, `monto`, `descripcion`, `venta_id`, `usuario_id`, `fecha`, `created_at`) VALUES
-(1, 3, 'inicial', 10.00, 'Apertura de turno', NULL, 1, '2026-02-12 00:16:56', '2026-02-12 00:16:56'),
-(2, 3, 'venta', 1040.00, 'Venta #2', 2, 1, '2026-02-12 00:31:08', '2026-02-12 00:31:08'),
-(3, 4, 'venta', 520.00, 'Venta #5', 5, 1, '2026-02-13 18:58:46', '2026-02-13 18:58:46');
 
 -- --------------------------------------------------------
 
@@ -1126,14 +1105,6 @@ CREATE TABLE `turnos_caja` (
   `cerrado_por` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Volcado de datos para la tabla `turnos_caja`
---
-
-INSERT INTO `turnos_caja` (`id`, `user_id`, `usuario_id`, `usuario_nombre`, `monto_inicial`, `monto_final`, `monto_esperado`, `diferencia`, `estado`, `fecha_apertura`, `fecha_cierre`, `notas_apertura`, `notas_cierre`, `cerrado_por`) VALUES
-(3, 1, 1, 'Administrador', 10.00, 11.00, 1275.75, -1264.75, 'cerrado', '2026-02-12 00:16:56', '2026-02-12 21:14:02', '', NULL, NULL),
-(4, 1, 1, 'admin', 0.00, NULL, NULL, NULL, 'abierto', '2026-02-12 23:18:31', NULL, NULL, NULL, NULL);
-
 -- --------------------------------------------------------
 
 --
@@ -1221,7 +1192,7 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id`, `username`, `password`, `nombre`, `email`, `rol`, `role_id`, `activo`, `is_active`, `last_login`, `failed_attempts`, `last_failed_login`, `created_at`, `updated_at`) VALUES
-(1, 'admin', '$argon2id$v=19$m=65536,t=4,p=3$OVFDWTJZN1poQWVFSWUzdA$hop7fr/UVRC9kKkzw1zIWlaafOChzNrJQghG9vPiGik', 'Administrador', 'admin@ferreteria.com', 'admin', 1, 1, 1, '2026-02-13 18:50:52', 0, NULL, '2026-02-11 23:49:57', '2026-02-13 18:50:52');
+(1, 'admin', '$argon2id$v=19$m=65536,t=4,p=3$VlZmN3VLNkhwVkdSczUveA$rs09yWhM1oJlgXF0ZfRj4WkHXQeNMMNpSJNyJ02Hdc4', 'Administrador', 'admin@ferreteria.com', 'admin', 1, 1, 1, '2026-02-18 17:50:01', 0, NULL, '2026-02-11 23:49:57', '2026-02-18 17:50:01');
 
 -- --------------------------------------------------------
 
@@ -1248,17 +1219,6 @@ CREATE TABLE `ventas` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Volcado de datos para la tabla `ventas`
---
-
-INSERT INTO `ventas` (`id`, `usuario_id`, `cliente_id`, `total`, `subtotal`, `descuento_porcentaje`, `descuento_monto`, `monto_pagado`, `cambio`, `metodo_pago`, `metodo_pago_secundario`, `monto_pago_secundario`, `estado`, `notas`, `fecha`, `created_at`, `updated_at`) VALUES
-(1, 1, NULL, 225.75, 0.00, 0.00, 0.00, 225.75, 0.00, 'efectivo', NULL, 0.00, 'completada', NULL, '2026-02-12 00:26:17', '2026-02-12 00:26:17', '2026-02-12 00:26:17'),
-(2, 1, NULL, 1040.00, 0.00, 0.00, 0.00, 1040.00, 0.00, 'efectivo', NULL, 0.00, 'completada', NULL, '2026-02-12 00:31:08', '2026-02-12 00:31:08', '2026-02-12 00:31:08'),
-(3, 1, 1, 1040.00, 0.00, 0.00, 0.00, 0.00, 0.00, 'cuenta_corriente', '', 0.00, 'completada', NULL, '2026-02-12 23:35:50', '2026-02-12 23:35:50', '2026-02-12 23:35:50'),
-(4, 1, 1, 1040.00, 0.00, 0.00, 0.00, 0.00, 0.00, 'cuenta_corriente', '', 0.00, 'completada', NULL, '2026-02-13 18:53:26', '2026-02-13 18:53:26', '2026-02-13 18:53:26'),
-(5, 1, NULL, 520.00, 0.00, 0.00, 0.00, 520.00, 0.00, 'transferencia', 'Nombre: pepe - Tel: 3248324324', 0.00, 'completada', NULL, '2026-02-13 18:58:46', '2026-02-13 18:58:46', '2026-02-13 18:58:46');
 
 -- --------------------------------------------------------
 
@@ -1297,17 +1257,6 @@ CREATE TABLE `venta_detalles` (
   `subtotal` decimal(10,2) NOT NULL,
   `subtotal_sin_descuento` decimal(10,2) DEFAULT 0.00
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Volcado de datos para la tabla `venta_detalles`
---
-
-INSERT INTO `venta_detalles` (`id`, `venta_id`, `producto_id`, `cantidad`, `precio`, `precio_costo`, `descuento_porcentaje`, `descuento_monto`, `subtotal`, `subtotal_sin_descuento`) VALUES
-(1, 1, 2, 1.500, 150.50, 0.00, 0.00, 0.00, 225.75, 0.00),
-(2, 2, 1, 2.000, 520.00, 0.00, 0.00, 0.00, 1040.00, 0.00),
-(3, 3, 1, 2.000, 520.00, 0.00, 0.00, 0.00, 1040.00, 0.00),
-(4, 4, 1, 2.000, 520.00, 0.00, 0.00, 0.00, 1040.00, 0.00),
-(5, 5, 1, 1.000, 520.00, 0.00, 0.00, 0.00, 520.00, 0.00);
 
 --
 -- Índices para tablas volcadas
@@ -1546,7 +1495,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT de la tabla `login_attempts`
 --
 ALTER TABLE `login_attempts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT de la tabla `marcas`
